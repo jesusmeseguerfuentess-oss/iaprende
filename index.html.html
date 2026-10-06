@@ -1,0 +1,716 @@
+<title>IAprende</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cabecera fija, portada con comparación de prompts a la derecha, secciones de guía con tarjetas copiables, y ayuda con glosario y preguntas frecuentes. */
+:root {
+  --bg: #F3F5F9;
+  --surface: #FFFFFF;
+  --ink: #0F1A2E;
+  --muted: #56627A;
+  --line: #D9DFEA;
+  --accent: #2338E8;
+  --accent-ink: #FFFFFF;
+  --mark: #FFE066;
+  --code-bg: #EAEEF7;
+  --good: #17794A;
+  --bad: #B42318;
+  --display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1020; --surface: #131A2C; --ink: #E9EDF7; --muted: #9AA6BF; --line: #25304A;
+    --accent: #8C9BFF; --accent-ink: #0B1020; --mark: #5A4A0A; --code-bg: #0E1426;
+    --good: #4CC38A; --bad: #FF8A80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1020; --surface: #131A2C; --ink: #E9EDF7; --muted: #9AA6BF; --line: #25304A;
+  --accent: #8C9BFF; --accent-ink: #0B1020; --mark: #5A4A0A; --code-bg: #0E1426;
+  --good: #4CC38A; --bad: #FF8A80; color-scheme: dark;
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--display); line-height: 1.12; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-inline: 20px; }
+
+/* Cabecera */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 20px; min-height: 60px; }
+.brand { font: 800 1.4rem/1 var(--display); color: var(--ink); text-decoration: none; letter-spacing: -0.02em; white-space: nowrap; }
+.brand span { color: var(--accent); }
+.nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem; padding: 8px 12px; border-radius: 6px; white-space: nowrap; }
+.nav a:hover { color: var(--ink); background: var(--code-bg); }
+.theme { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; font: 500 0.9rem var(--body); cursor: pointer; }
+.theme:hover { background: var(--code-bg); }
+
+/* Portada */
+.hero { padding-block: 56px 48px; }
+.hero .wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 40px; align-items: start; }
+.hero h1 { font-size: clamp(2.2rem, 5.2vw, 3.7rem); font-weight: 800; }
+mark { background: linear-gradient(transparent 58%, var(--mark) 58%); color: inherit; padding: 0 2px; }
+.hero .lead { color: var(--muted); font-size: 1.2rem; margin-top: 20px; max-width: 52ch; }
+.search { margin-top: 28px; display: flex; flex-direction: column; gap: 8px; max-width: 520px; }
+.search label { font: 600 0.78rem var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.search input { width: 100%; font: 400 1.05rem var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 13px 14px; }
+.search input::placeholder { color: var(--muted); }
+.search .count { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+.compare { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.compare .box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+.tag { font: 600 0.75rem var(--body); text-transform: uppercase; letter-spacing: 0.09em; }
+.tag.bad { color: var(--bad); }
+.tag.good { color: var(--good); }
+.compare .box p { font-family: var(--mono); font-size: 0.88rem; line-height: 1.55; margin-top: 8px; overflow-wrap: anywhere; }
+.compare .box.strong { border-color: var(--accent); border-width: 2px; }
+.compare small { color: var(--muted); font-size: 0.92rem; }
+
+/* Secciones */
+section { padding-block: 56px; scroll-margin-top: 60px; }
+section.alt { background: var(--surface); border-block: 1px solid var(--line); }
+.eyebrow { font: 600 0.78rem var(--body); text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+.sec-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; max-width: 64ch; }
+.sec-head h2 { font-size: clamp(1.75rem, 3.6vw, 2.5rem); font-weight: 700; }
+.sec-head p { color: var(--muted); }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; counter-reset: paso; }
+.steps li { counter-increment: paso; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 8px; }
+.steps li::before { content: counter(paso); font: 800 1.9rem/1 var(--display); color: var(--accent); }
+.steps h3 { font-size: 1.2rem; }
+.steps p { color: var(--muted); font-size: 0.98rem; }
+.alt .steps li { background: var(--bg); }
+
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.alt .item { background: var(--bg); }
+.item h3 { font-size: 1.2rem; font-weight: 700; }
+.item > p { color: var(--muted); font-size: 0.98rem; }
+pre.prompt { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 13px 14px; font: 400 0.84rem/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+.copy { align-self: flex-start; margin-top: auto; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 7px 14px; font: 600 0.88rem var(--body); cursor: pointer; }
+.copy:hover { background: var(--accent); color: var(--accent-ink); }
+
+/* Estudios: filas método + prompt */
+.rows { display: flex; flex-direction: column; gap: 16px; }
+.method { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 24px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 24px; }
+.method > div { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.method h3 { font-size: 1.3rem; }
+.method .why { color: var(--muted); font-size: 0.98rem; }
+.method .copy { margin-top: 0; }
+.notice { margin-top: 28px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; background: var(--surface); padding: 18px 20px; max-width: 78ch; }
+.notice h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.notice ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 0.98rem; }
+.alt .notice { background: var(--bg); }
+
+/* Fórmula de prompt */
+.formula { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 12px; margin-bottom: 28px; }
+.formula div { border-top: 3px solid var(--accent); padding-top: 10px; }
+.formula b { font: 700 1.05rem var(--display); display: block; }
+.formula span { color: var(--muted); font-size: 0.95rem; }
+
+/* Constructores */
+.builder { margin-top: 32px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 28px; }
+.alt .builder { background: var(--bg); }
+.builder h3 { font-size: 1.35rem; margin-bottom: 4px; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; min-width: 0; }
+.fields .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font: 600 0.8rem var(--body); color: var(--muted); }
+.field input, .field select, .field textarea { width: 100%; font: 400 0.98rem var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; }
+.alt .field input, .alt .field select, .alt .field textarea { background: var(--surface); }
+.field textarea { resize: vertical; min-height: 66px; }
+.out { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.out .copy { margin-top: 0; }
+@media (max-width: 480px) { .fields { grid-template-columns: minmax(0, 1fr); } }
+
+/* Ayuda */
+.help { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 40px; align-items: start; }
+.help h3 { font-size: 1.4rem; margin-bottom: 16px; }
+dl.gloss { margin: 0; display: flex; flex-direction: column; gap: 14px; }
+dl.gloss dt { font-weight: 600; }
+dl.gloss dd { margin: 2px 0 0; color: var(--muted); font-size: 0.98rem; }
+details { border-bottom: 1px solid var(--line); }
+details:first-of-type { border-top: 1px solid var(--line); }
+summary { cursor: pointer; padding: 16px 28px 16px 0; font-weight: 600; list-style: none; position: relative; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font: 500 1.4rem var(--display); color: var(--accent); }
+details[open] summary::after { content: "−"; }
+details p { color: var(--muted); padding-bottom: 18px; font-size: 0.98rem; max-width: 62ch; }
+
+footer { border-top: 1px solid var(--line); padding-block: 36px 48px; color: var(--muted); font-size: 0.92rem; }
+footer .wrap { display: flex; flex-direction: column; gap: 10px; }
+footer strong { color: var(--ink); font-family: var(--display); font-size: 1.1rem; }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio">IA<span>prende</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#empezar">Empezar</a>
+      <a href="#cotidiano">Vida diaria</a>
+      <a href="#estudios">Estudios</a>
+      <a href="#prompts">Trucos</a>
+      <a href="#secretos">Poco conocido</a>
+      <a href="#deporte">Deporte</a>
+      <a href="#ayuda">Ayuda y FAQ</a>
+    </nav>
+    <button class="theme" id="theme" type="button" aria-label="Cambiar entre tema claro y oscuro">Tema</button>
+  </div>
+</header>
+
+<main>
+  <div class="hero" id="inicio">
+    <div class="wrap">
+      <div>
+        <h1>Aprende a pedirle a la IA lo que <mark>de verdad necesitas</mark></h1>
+        <p class="lead">Guías prácticas, prompts listos para copiar y métodos de estudio para sacar partido a ChatGPT, Claude, Gemini y cualquier otro asistente. Sin jerga y sin necesidad de saber programar.</p>
+        <div class="search">
+          <label for="q">Busca un truco o un prompt</label>
+          <input id="q" type="search" placeholder="Prueba con: examen, viaje, entrenamiento, correo…" autocomplete="off">
+          <div class="count" id="count" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="compare" aria-label="Ejemplo de prompt flojo y prompt bueno">
+        <div class="box">
+          <span class="tag bad">Prompt flojo</span>
+          <p>Hazme un plan de estudio.</p>
+        </div>
+        <div class="box strong">
+          <span class="tag good">Prompt con contexto</span>
+          <p>Estudio 2.º de Bachillerato y tengo examen de Historia de España el 24 de octubre. Puedo estudiar 1 hora al día, 5 días por semana. Hazme un plan día a día con repaso de lo anterior y 5 preguntas de autoevaluación al final de cada sesión. Preséntalo en una tabla.</p>
+        </div>
+        <small>La diferencia está en el contexto. Cuanto más claro es lo que pides, menos tiene que adivinar la IA.</small>
+      </div>
+    </div>
+  </div>
+
+  <section id="empezar" class="alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Empezar</span>
+        <h2>Tu primera conversación útil en tres pasos</h2>
+        <p>No hace falta ser técnico. Sirve cualquier asistente de IA con chat, en el móvil o en el ordenador.</p>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Abre un chat nuevo</h3>
+          <p>Elige una herramienta y empieza una conversación limpia para cada tema. Mezclar asuntos distintos en un solo chat empeora las respuestas.</p>
+        </li>
+        <li>
+          <h3>Cuenta quién eres y qué buscas</h3>
+          <p>Indica tu situación, para qué lo necesitas y cómo quieres la respuesta: una tabla, una lista corta, un texto de 100 palabras.</p>
+        </li>
+        <li>
+          <h3>Mejora y comprueba</h3>
+          <p>Pide cambios concretos ("más corto", "menos formal") y verifica los datos importantes en una fuente fiable antes de usarlos.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="cotidiano">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Vida diaria</span>
+        <h2>La IA para el día a día</h2>
+        <p>Prompts para cocina, papeleo, viajes, dinero y decisiones. Copia el que necesites y cambia lo que va entre corchetes.</p>
+      </div>
+      <div class="grid" data-group>
+        <article class="item">
+          <h3>Cocinar con lo que ya tienes</h3>
+          <p>Evita tirar comida y piensa menos en qué cenar.</p>
+          <pre class="prompt">En mi nevera tengo: [ingredientes]. Somos [número] personas y no podemos comer [alergias o gustos]. Propón 3 cenas de menos de 30 minutos y dime qué me falta comprar para cada una.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Escribir una reclamación</h3>
+          <p>Un texto firme y educado en pocos minutos.</p>
+          <pre class="prompt">Redacta una reclamación formal a [empresa] por [problema]. Datos: compré el [fecha] y pagué [importe]. Quiero [solución que pides]. Tono firme y educado, máximo 150 palabras. Deja entre corchetes los datos que deba completar yo.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Entender un contrato o una factura</h3>
+          <p>Pega el texto sin tus datos personales y pide una traducción a lenguaje claro.</p>
+          <pre class="prompt">Te pego un contrato de [tipo]. Explícamelo en lenguaje sencillo: qué obligaciones tengo, qué plazos hay y qué cláusulas conviene preguntar antes de firmar. Marca lo que debería revisar un profesional.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Organizar un viaje</h3>
+          <p>Un itinerario con tiempos realistas y presupuesto.</p>
+          <pre class="prompt">Planifica [número] días en [ciudad] para [personas, edades]. Presupuesto total: [importe]. Nos gusta [intereses]. Evita [cosas que no queremos]. Dame un plan por mañana, tarde y noche, con tiempos aproximados de desplazamiento.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Ordenar tus gastos del mes</h3>
+          <p>Pega cifras, sin números de cuenta ni datos bancarios.</p>
+          <pre class="prompt">Estos son mis ingresos y gastos del mes: [lista]. Clasifícalos en necesarios, deseados y ahorro. Dime dónde podría recortar sin que me afecte demasiado y propón un reparto para el próximo mes.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Decidir entre dos opciones</h3>
+          <p>Una forma ordenada de comparar, sin que te dé la razón por defecto.</p>
+          <pre class="prompt">Estoy dudando entre [opción A] y [opción B]. Lo que más me importa es [criterios]. Haz una tabla de pros y contras ponderada y después defiende la opción que menos me atrae, para ver si mi decisión aguanta.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="estudios" class="alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Estudios</span>
+        <h2>Métodos de estudio con inteligencia artificial</h2>
+        <p>Usada como entrenador y no como atajo, la IA te hace estudiar mejor. Estos métodos te obligan a pensar tú primero.</p>
+      </div>
+      <div class="rows" data-group>
+        <article class="item method">
+          <div>
+            <h3>Técnica Feynman</h3>
+            <p class="why">Explicas el tema con tus palabras y la IA detecta qué no has entendido. Si no sabes explicarlo con sencillez, aún no lo dominas.</p>
+          </div>
+          <div>
+            <pre class="prompt">Voy a explicarte [tema] como si tú tuvieras 12 años. Escucha mi explicación y después dime: 1) qué he explicado bien, 2) qué errores o lagunas tengo, 3) qué pregunta de repaso debería poder responder. No corrijas nada hasta que termine.</pre>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+        </article>
+        <article class="item method">
+          <div>
+            <h3>Tutor socrático</h3>
+            <p class="why">En vez de recibir la solución, la IA te guía con preguntas. Es más lento al principio y se recuerda mucho mejor.</p>
+          </div>
+          <div>
+            <pre class="prompt">Actúa como un tutor de [asignatura]. No me des la respuesta directamente. Hazme una pregunta cada vez para que llegue yo al resultado. Si me atasco dos veces seguidas, dame una pista pequeña. Empezamos con este ejercicio: [ejercicio].</pre>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+        </article>
+        <article class="item method">
+          <div>
+            <h3>Examen simulado</h3>
+            <p class="why">Practicar con preguntas de examen funciona mejor que releer. Pide que la IA se centre en lo que más fallas.</p>
+          </div>
+          <div>
+            <pre class="prompt">Estos son mis apuntes de [tema]: [pega el texto]. Hazme un examen de 10 preguntas tipo [test / desarrollo], de dificultad creciente. Plantea una pregunta cada vez, espera mi respuesta, corrígela y explica el error si lo hay. Al final dime en qué apartados debo insistir.</pre>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+        </article>
+        <article class="item method">
+          <div>
+            <h3>Tarjetas y repaso espaciado</h3>
+            <p class="why">Repasar justo antes de olvidar fija el contenido a largo plazo. La IA prepara las tarjetas y el calendario.</p>
+          </div>
+          <div>
+            <pre class="prompt">A partir de estos apuntes: [texto], crea 20 tarjetas de pregunta y respuesta. Preséntalas en formato CSV con dos columnas, "pregunta" y "respuesta", para importarlas en una app de tarjetas. Después propón un calendario de repaso para los días 1, 3, 7 y 14.</pre>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+        </article>
+        <article class="item method">
+          <div>
+            <h3>Resumen por capas</h3>
+            <p class="why">Empiezas por la idea central y bajas al detalle. Así sabes dónde encaja cada dato.</p>
+          </div>
+          <div>
+            <pre class="prompt">Resume este texto en tres capas: 1) una frase, 2) un párrafo de 5 líneas, 3) un esquema con los conceptos clave y sus relaciones. Texto: [pega el texto]. Al final, lista 3 términos que probablemente no conozca y defínelos.</pre>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+        </article>
+        <article class="item method">
+          <div>
+            <h3>Plan de estudio hacia atrás</h3>
+            <p class="why">Partes de la fecha del examen y repartes el temario de modo realista, con días de repaso y de descanso.</p>
+          </div>
+          <div>
+            <pre class="prompt">Tengo examen de [asignatura] el [fecha]. Temario: [temas]. Puedo estudiar [horas] al día, [días] días por semana. Crea un plan que empiece por lo que peor llevo ([temas flojos]), incluya repasos y deje el último día libre para un simulacro.</pre>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+        </article>
+      </div>
+      <div class="notice">
+        <h3>Reglas para estudiar con IA sin engañarte</h3>
+        <ul>
+          <li>Intenta responder tú antes de preguntar. El esfuerzo de recordar es lo que enseña.</li>
+          <li>Contrasta lo importante con tus apuntes o el libro. La IA puede equivocarse con seguridad.</li>
+          <li>Usa la IA para entender, no para entregar trabajos como propios. Consulta las normas de tu centro.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="prompts">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Trucos de escritura</span>
+        <h2>Cómo escribirle para que te haga caso</h2>
+        <p>Una buena petición tiene cinco ingredientes. No hacen falta todos siempre, pero cada uno que añades quita adivinanzas.</p>
+      </div>
+      <div class="formula">
+        <div><b>Rol</b><span>Quién quieres que sea: "Actúa como profesora de matemáticas".</span></div>
+        <div><b>Contexto</b><span>Tu situación y tu objetivo real.</span></div>
+        <div><b>Tarea</b><span>Un verbo claro: resume, compara, corrige, planifica.</span></div>
+        <div><b>Formato</b><span>Tabla, lista, 100 palabras, tono cercano.</span></div>
+        <div><b>Límites</b><span>Lo que no quieres: jerga, relleno, datos inventados.</span></div>
+      </div>
+      <div class="grid" data-group>
+        <article class="item">
+          <h3>Que te pregunte antes</h3>
+          <p>Evita respuestas genéricas cuando falta información.</p>
+          <pre class="prompt">Antes de responder, hazme las preguntas que necesites para darme una respuesta a medida. Pregunta de una en una.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Pide varias versiones</h3>
+          <p>Compara y quédate con la que mejor suena.</p>
+          <pre class="prompt">Dame 3 versiones distintas de este texto: una formal, una cercana y una muy breve. Después dime cuál recomiendas y por qué.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Enséñale un ejemplo</h3>
+          <p>Un ejemplo vale más que diez instrucciones.</p>
+          <pre class="prompt">Quiero textos con este estilo: [pega un ejemplo que te guste]. Escribe sobre [tema] imitando su longitud, tono y estructura, sin copiar frases.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Que se critique a sí misma</h3>
+          <p>La segunda pasada suele ser mejor que la primera.</p>
+          <pre class="prompt">Revisa tu respuesta anterior como lo haría un editor exigente. Señala sus 3 puntos más débiles y entrega una versión mejorada.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Permiso para no saber</h3>
+          <p>Reduce las invenciones en temas donde importa la exactitud.</p>
+          <pre class="prompt">Si no estás seguro de algo, dilo claramente en lugar de inventarlo. Separa lo que sabes con certeza de lo que supones.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Divide las tareas grandes</h3>
+          <p>Un encargo enorme sale mejor en etapas.</p>
+          <pre class="prompt">Vamos a escribir [proyecto] por pasos. Primero propón un esquema con los apartados. Cuando lo apruebe, desarrollaremos cada apartado de uno en uno.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+      </div>
+
+      <div class="builder">
+        <div>
+          <h3>Generador de prompts</h3>
+          <p style="color:var(--muted);margin-bottom:16px;font-size:0.98rem">Rellena los campos y copia el resultado. Se actualiza mientras escribes.</p>
+          <div class="fields">
+            <div class="field full"><label for="b-rol">Rol</label><input id="b-rol" type="text" value="profesor de inglés con 10 años de experiencia"></div>
+            <div class="field full"><label for="b-ctx">Contexto</label><textarea id="b-ctx">Tengo un nivel B1 y una entrevista de trabajo en inglés dentro de dos semanas.</textarea></div>
+            <div class="field full"><label for="b-tarea">Tarea</label><textarea id="b-tarea">Prepárame un plan de práctica para mejorar mi vocabulario y mi pronunciación.</textarea></div>
+            <div class="field full"><label for="b-formato">Formato</label><input id="b-formato" type="text" value="tabla por días, con ejercicios de 15 minutos"></div>
+          </div>
+        </div>
+        <div class="out">
+          <pre class="prompt" id="b-out"></pre>
+          <button class="copy" type="button" data-target="b-out">Copiar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="secretos" class="alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Poco conocido</span>
+        <h2>Cosas que la IA hace y casi nadie le pide</h2>
+        <p>Algunas funciones dependen de la herramienta y del plan que uses. Si una no aparece, prueba con otro asistente.</p>
+      </div>
+      <div class="grid" data-group>
+        <article class="item">
+          <h3>Que te entreviste</h3>
+          <p>Para escribir tu currículum, un discurso o una carta, deja que ella saque la información.</p>
+          <pre class="prompt">Quiero escribir [documento]. Entrevístame con una pregunta cada vez, hasta tener lo necesario. Cuando termines, redacta el borrador con lo que te haya contado.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Que mejore tu prompt</h3>
+          <p>Pídele que reescriba tu petición antes de contestarla.</p>
+          <pre class="prompt">Este es mi prompt: "[tu prompt]". Reescríbelo para que sea más claro y completo, dime qué le faltaba y después respóndelo.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Sube una foto o un PDF</h3>
+          <p>Muchos asistentes leen imágenes y documentos: la pizarra de clase, una planta enferma, una etiqueta, un manual largo.</p>
+          <pre class="prompt">Te adjunto una foto de [lo que sea]. Transcribe el texto, ordénalo en un esquema y dime qué dudas o errores ves.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Abogado del diablo</h3>
+          <p>Para probar una idea antes de invertir tiempo o dinero.</p>
+          <pre class="prompt">Mi plan es [plan]. Imagina que ha fallado dentro de un año. Dame las 5 causas más probables del fracaso y cómo podría prevenir cada una.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>De texto desordenado a tabla</h3>
+          <p>Convierte notas sueltas en una tabla o en datos para una hoja de cálculo.</p>
+          <pre class="prompt">Convierte estas notas en una tabla con las columnas [columnas]. Si falta algún dato, deja la celda vacía y no lo inventes. Notas: [pega el texto]</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Fórmulas de Excel en lenguaje normal</h3>
+          <p>Describe lo que quieres y obtén la fórmula con su explicación.</p>
+          <pre class="prompt">En mi hoja de cálculo, la columna A tiene [dato] y la columna B tiene [dato]. Quiero [resultado]. Dame la fórmula y explícame qué hace cada parte.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Ensayar una entrevista o un idioma</h3>
+          <p>Practica conversaciones difíciles sin presión y con corrección inmediata.</p>
+          <pre class="prompt">Haz de entrevistador para el puesto de [puesto]. Hazme una pregunta cada vez, espera mi respuesta y dame feedback breve antes de la siguiente. Al terminar, resume mis fortalezas y qué mejorar.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Configura tu estilo una vez</h3>
+          <p>Varias aplicaciones permiten guardar instrucciones personales o preferencias de respuesta. Así no repites lo mismo en cada chat.</p>
+          <pre class="prompt">Responde en español, con frases cortas y sin relleno. Si la respuesta es larga, empieza con un resumen de dos líneas. Cuando no sepas algo, dilo.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="deporte">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Deporte</span>
+        <h2>Cómo aplicar la IA en el deporte</h2>
+        <p>Para deportistas aficionados, entrenadores y familias. La IA ayuda a planificar y a entender datos, pero no sustituye a un médico, un fisioterapeuta ni un entrenador titulado.</p>
+      </div>
+      <div class="grid" data-group>
+        <article class="item">
+          <h3>Planificar la semana</h3>
+          <p>Usa el generador de abajo para obtener un plan según tu nivel y tu tiempo.</p>
+        </article>
+        <article class="item">
+          <h3>Entender tus datos</h3>
+          <p>Pega los ritmos, distancias y pulsaciones de tu reloj o app y pide tendencias.</p>
+          <pre class="prompt">Estos son mis últimos [número] entrenamientos de [deporte]: [datos de ritmo, distancia, pulsaciones]. Describe qué tendencias ves, si estoy progresando y qué cambiaría la próxima semana. No hagas valoraciones médicas.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Ejercicios para mejorar la técnica</h3>
+          <p>Describe el fallo que tienes y pide ejercicios progresivos.</p>
+          <pre class="prompt">Juego a [deporte] y mi problema es [fallo técnico]. Propón 5 ejercicios progresivos para corregirlo, con material mínimo, duración y qué debo sentir al hacerlos bien.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Comida antes y después</h3>
+          <p>Ideas generales de menús, no una dieta personalizada.</p>
+          <pre class="prompt">Voy a [entrenar / competir] a las [hora]. Dame 3 opciones de comida para antes y 3 para después, económicas y fáciles de preparar. No tengo [alergias o intolerancias]. Indica cuándo conviene consultar a un dietista deportivo.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Preparación mental</h3>
+          <p>Rutinas para controlar los nervios antes de competir.</p>
+          <pre class="prompt">Me pongo muy nervioso antes de [competición]. Crea una rutina de 10 minutos para el día de la prueba con respiración, visualización y frases clave. Que sea fácil de recordar.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+        <article class="item">
+          <h3>Para entrenadores</h3>
+          <p>Ahorra tiempo en tareas repetitivas y dedica más a los jugadores.</p>
+          <pre class="prompt">Soy entrenador de [equipo, categoría y edad]. Diseña una sesión de 75 minutos centrada en [objetivo], con calentamiento, 3 ejercicios con variantes fáciles y difíciles, y una pregunta final para que los jugadores reflexionen.</pre>
+          <button class="copy" type="button">Copiar</button>
+        </article>
+      </div>
+
+      <div class="builder">
+        <div>
+          <h3>Generador de plan semanal</h3>
+          <p style="color:var(--muted);margin-bottom:16px;font-size:0.98rem">Elige tus datos y copia el prompt para tu asistente de IA.</p>
+          <div class="fields">
+            <div class="field"><label for="s-dep">Deporte</label>
+              <select id="s-dep">
+                <option>running</option><option>fútbol</option><option>baloncesto</option><option>natación</option>
+                <option>ciclismo</option><option>pádel</option><option>tenis</option><option>entrenamiento de fuerza</option>
+              </select></div>
+            <div class="field"><label for="s-niv">Nivel</label>
+              <select id="s-niv"><option>principiante</option><option selected>intermedio</option><option>avanzado</option></select></div>
+            <div class="field full"><label for="s-obj">Objetivo</label>
+              <select id="s-obj">
+                <option>mejorar la resistencia</option><option>ganar fuerza</option><option>preparar una competición</option>
+                <option>mejorar la condición física general</option><option>volver a entrenar tras un parón</option>
+              </select></div>
+            <div class="field"><label for="s-dias">Días por semana</label><input id="s-dias" type="number" min="1" max="7" value="4"></div>
+            <div class="field"><label for="s-min">Minutos por sesión</label><input id="s-min" type="number" min="15" max="180" step="5" value="60"></div>
+            <div class="field full"><label for="s-lim">Molestias o limitaciones (opcional)</label><input id="s-lim" type="text" placeholder="Por ejemplo: rodilla sensible"></div>
+          </div>
+        </div>
+        <div class="out">
+          <pre class="prompt" id="s-out"></pre>
+          <button class="copy" type="button" data-target="s-out">Copiar</button>
+        </div>
+      </div>
+
+      <div class="notice">
+        <h3>Antes de entrenar con un plan hecho por IA</h3>
+        <ul>
+          <li>Si tienes dolor, mareos, una lesión o una enfermedad, consulta primero con un profesional sanitario.</li>
+          <li>Los menores de edad deben entrenar con supervisión y no seguir dietas generadas por IA.</li>
+          <li>Empieza por debajo de lo que el plan indique y sube la carga poco a poco.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="ayuda" class="alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Ayuda</span>
+        <h2>Preguntas frecuentes y glosario</h2>
+        <p>Respuestas rápidas a lo que más se pregunta al empezar.</p>
+      </div>
+      <div class="help">
+        <div>
+          <h3>Preguntas frecuentes</h3>
+          <details>
+            <summary>¿Tengo que pagar para usar la IA?</summary>
+            <p>La mayoría de asistentes ofrecen un plan gratuito con límites de uso. Los planes de pago suelen dar más mensajes y funciones. Empieza con la versión gratuita y valora el cambio solo si te quedas corto.</p>
+          </details>
+          <details>
+            <summary>¿La IA puede equivocarse?</summary>
+            <p>Sí, y a veces con mucha seguridad. Se llama alucinación y consiste en inventar datos, citas o fuentes que suenan bien. Verifica siempre cifras, fechas, nombres y cualquier consejo de salud, dinero o legal.</p>
+          </details>
+          <details>
+            <summary>¿Qué datos no debo compartir?</summary>
+            <p>Contraseñas, números de tarjeta o cuenta, documentos de identidad y datos médicos identificables. Cambia nombres y detalles personales por otros genéricos cuando pegues un texto.</p>
+          </details>
+          <details>
+            <summary>¿Es trampa usar la IA para estudiar?</summary>
+            <p>Depende de cómo la uses y de las normas de tu centro. Para entender, practicar y repasar es una gran ayuda. Entregar como tuyo un trabajo que no hiciste puede estar prohibido. Si tienes dudas, pregunta a tu profesor.</p>
+          </details>
+          <details>
+            <summary>¿Por qué me da respuestas distintas a la misma pregunta?</summary>
+            <p>Genera cada respuesta de nuevo y hay variación natural. Si necesitas resultados parecidos, fija el formato, da ejemplos y pide que mantenga la estructura.</p>
+          </details>
+          <details>
+            <summary>La respuesta no me sirve. ¿Qué hago?</summary>
+            <p>Añade contexto, di exactamente qué falla ("demasiado largo", "falta un ejemplo") o empieza un chat nuevo. Repetir la misma petición con otras palabras también ayuda.</p>
+          </details>
+          <details>
+            <summary>¿Sabe lo que pasó ayer?</summary>
+            <p>Solo si la herramienta tiene búsqueda en internet activada. Sin ella, su conocimiento llega hasta una fecha de corte. Para noticias o datos recientes, activa la búsqueda o consulta una fuente oficial.</p>
+          </details>
+          <details>
+            <summary>¿Pueden usarla los menores?</summary>
+            <p>Muchos servicios exigen una edad mínima o el permiso de un adulto. Si lo usa un menor, conviene acompañarle, revisar sus conversaciones y recordarle que no comparta datos personales.</p>
+          </details>
+          <details>
+            <summary>¿Qué herramienta me conviene?</summary>
+            <p>Los trucos de esta web sirven en cualquier asistente. Prueba la misma petición en dos y quédate con el que explique mejor, se adapte a tu tono y funcione bien en tu idioma.</p>
+          </details>
+          <details>
+            <summary>¿Puedo copiar y adaptar los prompts de esta web?</summary>
+            <p>Sí. Pulsa "Copiar", pégalo en tu asistente y cambia lo que va entre corchetes por tus datos.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Glosario</h3>
+          <dl class="gloss">
+            <div><dt>Prompt</dt><dd>El mensaje o instrucción que le escribes a la IA.</dd></div>
+            <div><dt>Modelo</dt><dd>El sistema de IA que genera las respuestas. Cada empresa tiene varios, con distinta capacidad y velocidad.</dd></div>
+            <div><dt>Contexto</dt><dd>Todo lo que la IA tiene presente en la conversación: tus mensajes, sus respuestas y los archivos que adjuntas. Tiene un límite de longitud.</dd></div>
+            <div><dt>Alucinación</dt><dd>Respuesta inventada que parece correcta.</dd></div>
+            <div><dt>Token</dt><dd>Fragmento de texto, aproximadamente una sílaba o una palabra corta, en que el modelo divide lo que lee y escribe.</dd></div>
+            <div><dt>Instrucciones personalizadas</dt><dd>Preferencias guardadas que la herramienta aplica a todas tus conversaciones, como tono o idioma.</dd></div>
+            <div><dt>Multimodal</dt><dd>Capaz de trabajar con texto, imágenes, audio o documentos y no solo con texto.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong>IAprende</strong>
+    <p>Guía independiente sobre inteligencia artificial para la vida diaria, los estudios y el deporte.</p>
+    <p>El contenido es informativo. La IA puede cometer errores y no sustituye el consejo de médicos, abogados, asesores financieros ni entrenadores titulados.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* Copiar */
+  function copyText(text, btn, source) {
+    var reset = function (label) { btn.textContent = label; setTimeout(function () { btn.textContent = 'Copiar'; }, 1800); };
+    var fallback = function () {
+      try {
+        var r = document.createRange(); r.selectNodeContents(source);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      } catch (e) {}
+      reset('Pulsa Ctrl+C');
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { reset('Copiado'); }, fallback);
+      } else { fallback(); }
+    } catch (e) { fallback(); }
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.copy');
+    if (!btn) return;
+    var pre = btn.dataset.target ? $(btn.dataset.target) : (btn.parentElement.querySelector('pre.prompt') || btn.closest('.item').querySelector('pre.prompt'));
+    if (pre) copyText(pre.textContent, btn, pre);
+  });
+
+  /* Tema */
+  $('theme').addEventListener('click', function () {
+    var r = document.documentElement, cur = r.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    r.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+
+  /* Búsqueda */
+  function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  var items = Array.prototype.slice.call(document.querySelectorAll('.item'));
+  var hay = items.map(function (el) { return norm(el.textContent); });
+  var groups = Array.prototype.slice.call(document.querySelectorAll('[data-group]'));
+  $('q').addEventListener('input', function (e) {
+    var q = norm(e.target.value.trim()), n = 0;
+    items.forEach(function (el, i) {
+      var show = !q || hay[i].indexOf(q) !== -1;
+      el.hidden = !show;
+      if (show) n++;
+    });
+    groups.forEach(function (g) { g.hidden = !g.querySelector('.item:not([hidden])'); });
+    $('count').textContent = q ? (n === 0 ? 'Sin resultados. Prueba con otra palabra.' : n + (n === 1 ? ' resultado' : ' resultados')) : '';
+  });
+
+  /* Generador general */
+  function buildGeneral() {
+    var rol = $('b-rol').value.trim(), ctx = $('b-ctx').value.trim(), tarea = $('b-tarea').value.trim(), fmt = $('b-formato').value.trim();
+    var p = [];
+    if (rol) p.push('Actúa como ' + rol + '.');
+    if (ctx) p.push('Contexto: ' + ctx);
+    if (tarea) p.push('Tarea: ' + tarea);
+    if (fmt) p.push('Formato de la respuesta: ' + fmt + '.');
+    p.push('Antes de responder, si te falta información importante, hazme las preguntas que necesites. Si no estás seguro de algo, dilo en lugar de inventarlo.');
+    $('b-out').textContent = p.join('\n\n');
+  }
+  ['b-rol', 'b-ctx', 'b-tarea', 'b-formato'].forEach(function (id) { $(id).addEventListener('input', buildGeneral); });
+  buildGeneral();
+
+  /* Generador deportivo */
+  function buildSport() {
+    var dep = $('s-dep').value, niv = $('s-niv').value, obj = $('s-obj').value;
+    var dias = $('s-dias').value || '3', min = $('s-min').value || '60', lim = $('s-lim').value.trim();
+    var t = 'Eres un entrenador de ' + dep + ' con experiencia. Diseña un plan de una semana para una persona de nivel ' + niv + '. Objetivo: ' + obj + '. Puede entrenar ' + dias + ' días a la semana, ' + min + ' minutos por sesión.';
+    if (lim) t += ' Limitaciones o molestias que debes tener en cuenta: ' + lim + '.';
+    t += '\n\nPara cada sesión indica calentamiento, bloque principal (con series, repeticiones o tiempos), vuelta a la calma y una forma sencilla de medir el esfuerzo, por ejemplo una escala del 1 al 10. Presenta el plan en una tabla por días. Añade al final tres señales que me indiquen que debo parar y consultar con un médico o un entrenador titulado.';
+    $('s-out').textContent = t;
+  }
+  ['s-dep', 's-niv', 's-obj', 's-dias', 's-min', 's-lim'].forEach(function (id) {
+    $(id).addEventListener('input', buildSport);
+    $(id).addEventListener('change', buildSport);
+  });
+  buildSport();
+})();
+</script>
